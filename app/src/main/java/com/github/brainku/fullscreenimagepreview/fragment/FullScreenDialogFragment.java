@@ -172,7 +172,7 @@ public class FullScreenDialogFragment extends DialogFragment {
         animatorSet.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
-                imgPlaceholder.setVisibility(View.GONE);
+                imgPlaceholder.setVisibility(View.INVISIBLE);
                 viewPagerDetails.setVisibility(View.VISIBLE);
             }
         });
@@ -180,6 +180,10 @@ public class FullScreenDialogFragment extends DialogFragment {
     }
 
     private void runExitAnimation(final Runnable runnable) {
+        if (mCallback != null) {
+            mStartValues = captureValue(mCallback.getCurrentImage(viewPagerDetails.getCurrentItem()));
+            mEndValues = captureValue(imgPlaceholder);
+        }
         int startWidth = mStartValues.getInt(KEY_WIDTH);
         int startHeight = mStartValues.getInt(KEY_HEIGHT);
         int startPosX = mStartValues.getInt(KEY_LOCATION_X);
@@ -310,5 +314,6 @@ public class FullScreenDialogFragment extends DialogFragment {
 
     public interface OnPageChangeCallback {
         void changeTo(int position);
+        ImageView getCurrentImage(int position);
     }
 }

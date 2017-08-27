@@ -17,13 +17,14 @@ public class MainActivity extends AppCompatActivity implements FullScreenDialogF
 
     @BindView(R.id.view_pager_test)
     ViewPager mPager;
+    SimpleViewPagerAdapter mAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view_pager);
         ButterKnife.bind(this);
-        SimpleViewPagerAdapter mAdapter = new SimpleViewPagerAdapter();
+        mAdapter = new SimpleViewPagerAdapter();
         mPager.setAdapter(mAdapter);
         mAdapter.setOnImageClick(new SimpleViewPagerAdapter.OnImageClickListener() {
             @Override
@@ -35,6 +36,11 @@ public class MainActivity extends AppCompatActivity implements FullScreenDialogF
 
     @Override
     public void changeTo(int position) {
-        mPager.setCurrentItem(position);
+        mPager.setCurrentItem(position, false);
+    }
+
+    @Override
+    public ImageView getCurrentImage(int position) {
+        return mAdapter.getCurrentImageView(position);
     }
 }

@@ -1,6 +1,7 @@
 package com.github.brainku.fullscreenimagepreview.adapter;
 
 import android.support.v4.view.PagerAdapter;
+import android.util.SparseArray;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -16,6 +17,8 @@ import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
  * Created by brainku on 17/8/26.
  */
 public class SimpleViewPagerAdapter extends PagerAdapter {
+
+    public SparseArray<ImageView> imageViewSparseArray = new SparseArray<>();
 
     public List<Integer> mCovers = Arrays.asList(R.mipmap.pic_1, R.mipmap.pic_2,R.mipmap.pic_3,R.mipmap.pic_4);
 
@@ -43,6 +46,7 @@ public class SimpleViewPagerAdapter extends PagerAdapter {
                 }
             }
         });
+        imageViewSparseArray.put(position, imageView);
         return imageView;
     }
 
@@ -50,6 +54,10 @@ public class SimpleViewPagerAdapter extends PagerAdapter {
         final ImageView imageView = new ImageView(container.getContext());
         imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
         return imageView;
+    }
+
+    public ImageView getCurrentImageView(int position) {
+        return imageViewSparseArray.get(position);
     }
 
     OnImageClickListener mListener;
@@ -64,6 +72,7 @@ public class SimpleViewPagerAdapter extends PagerAdapter {
     }
     @Override
     public void destroyItem(ViewGroup container, int position, Object object) {
+        imageViewSparseArray.remove(position);
         container.removeView((View) object);
     }
 }
