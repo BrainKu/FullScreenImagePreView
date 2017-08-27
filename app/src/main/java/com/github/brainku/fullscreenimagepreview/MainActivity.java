@@ -13,7 +13,7 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements FullScreenDialogFragment.OnPageChangeCallback {
 
     @BindView(R.id.view_pager_test)
     ViewPager mPager;
@@ -31,5 +31,10 @@ public class MainActivity extends AppCompatActivity {
                 FullScreenDialogFragment.newInstance(covers, position, imgView).show(getFragmentManager(), "FullScreen");
             }
         });
+    }
+
+    @Override
+    public void changeTo(int position) {
+        mPager.setCurrentItem(position);
     }
 }

@@ -8,6 +8,7 @@ import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Matrix;
 import android.os.Bundle;
@@ -34,6 +35,7 @@ import butterknife.Unbinder;
 import static android.widget.ImageView.ScaleType.CENTER_INSIDE;
 
 /**
+ * FullScreenDialogFragment
  * Created by brainku on 17/8/26.
  */
 
@@ -92,20 +94,41 @@ public class FullScreenDialogFragment extends DialogFragment {
         return view;
     }
 
+    private DetailsAdapter mAdapter;
+
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         initArgument();
-        DetailsAdapter adapter = new DetailsAdapter();
-        adapter.setOnImageClick(new SimpleViewPagerAdapter.OnImageClickListener() {
+        mAdapter = new DetailsAdapter();
+        mAdapter.setOnImageClick(new SimpleViewPagerAdapter.OnImageClickListener() {
             @Override
             public void onImageClick(ImageView imgView, List<Integer> covers, int position) {
                 dismiss();
             }
         });
         imgPlaceholder.setImageResource(mCovers.get(pos));
-        viewPagerDetails.setAdapter(adapter);
+        viewPagerDetails.setAdapter(mAdapter);
         viewPagerDetails.setCurrentItem(pos);
+        viewPagerDetails.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                imgPlaceholder.setImageResource(mCovers.get(position));
+                if (mCallback != null) {
+                    mCallback.changeTo(position);
+                }
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
         imgPlaceholder.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
             @Override
             public boolean onPreDraw() {
@@ -202,6 +225,18 @@ public class FullScreenDialogFragment extends DialogFragment {
         });
     }
 
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        mCallback = (OnPageChangeCallback) context;
+    }
+
+    @Override
+    public void onDetach() {
+        mCallback = null;
+        super.onDetach();
+    }
+
     List<Integer> mCovers;
     int pos;
     Bundle mStartValues;
@@ -215,7 +250,7 @@ public class FullScreenDialogFragment extends DialogFragment {
 
     private static final String TAG = "TAG_ACT";
 
-    class DetailsAdapter extends SimpleViewPagerAdapter {
+    private class DetailsAdapter extends SimpleViewPagerAdapter {
 
         @Override
         public ImageView createImage(ViewGroup container, int position) {
@@ -269,5 +304,11 @@ public class FullScreenDialogFragment extends DialogFragment {
             v.setLayoutParams(params);
             return num;
         }
+    }
+
+    OnPageChangeCallback mCallback;
+
+    public interface OnPageChangeCallback {
+        void changeTo(int position);
     }
 }
