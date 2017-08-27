@@ -8,6 +8,7 @@ import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.content.DialogInterface;
 import android.graphics.Matrix;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -96,15 +97,15 @@ public class FullScreenDialogFragment extends DialogFragment {
         super.onViewCreated(view, savedInstanceState);
         initArgument();
         DetailsAdapter adapter = new DetailsAdapter();
-        imgPlaceholder.setImageResource(mCovers.get(pos));
-        viewPagerDetails.setAdapter(adapter);
-        viewPagerDetails.setCurrentItem(pos);
-        viewPagerDetails.setOnClickListener(new View.OnClickListener() {
+        adapter.setOnImageClick(new SimpleViewPagerAdapter.OnImageClickListener() {
             @Override
-            public void onClick(View v) {
+            public void onImageClick(ImageView imgView, List<Integer> covers, int position) {
                 dismiss();
             }
         });
+        imgPlaceholder.setImageResource(mCovers.get(pos));
+        viewPagerDetails.setAdapter(adapter);
+        viewPagerDetails.setCurrentItem(pos);
         imgPlaceholder.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
             @Override
             public boolean onPreDraw() {
@@ -139,12 +140,12 @@ public class FullScreenDialogFragment extends DialogFragment {
         ObjectAnimator scaleX = ObjectAnimator.ofFloat(imgPlaceholder, "scaleX", scale, 1);
         ObjectAnimator scaleY = ObjectAnimator.ofFloat(imgPlaceholder, "scaleY", scale, 1);
 //        ValueAnimator widthAnimator = ValueAnimator.ofObject(new WidthEvaluator(imgPlaceholder), startWidth, endWidth);
-        ValueAnimator heightAnimator = ValueAnimator.ofObject(new HeightEvaluator(imgPlaceholder), (int)(startHeight/scale), endHeight);
+//        ValueAnimator heightAnimator = ValueAnimator.ofObject(new HeightEvaluator(imgPlaceholder), (int)(startHeight/scale), endHeight);
         ObjectAnimator translationX = ObjectAnimator.ofFloat(imgPlaceholder, "translationX", (startPosX - endPosX) / scale, 0);
         ObjectAnimator translationY = ObjectAnimator.ofFloat(imgPlaceholder, "translationY", (startPosY - endPosY) / scale, 0);
         AnimatorSet animatorSet = new AnimatorSet();
-        animatorSet.setDuration(3000);
-        animatorSet.playTogether(scaleX, scaleY,/* widthAnimator,  */heightAnimator,translationX, translationY);
+        animatorSet.setDuration(500);
+        animatorSet.playTogether(scaleX, scaleY,/* widthAnimator,  heightAnimator,*/translationX, translationY);
         animatorSet.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
@@ -153,6 +154,52 @@ public class FullScreenDialogFragment extends DialogFragment {
             }
         });
         animatorSet.start();
+    }
+
+    private void runExitAnimation(final Runnable runnable) {
+        int startWidth = mStartValues.getInt(KEY_WIDTH);
+        int startHeight = mStartValues.getInt(KEY_HEIGHT);
+        int startPosX = mStartValues.getInt(KEY_LOCATION_X);
+        int startPosY = mStartValues.getInt(KEY_LOCATION_Y);
+        int endWidth = mEndValues.getInt(KEY_WIDTH);
+        int endHeight = mEndValues.getInt(KEY_HEIGHT);
+        int endPosX = mEndValues.getInt(KEY_LOCATION_X);
+        int endPosY = mEndValues.getInt(KEY_LOCATION_Y);
+        imgPlaceholder.setVisibility(View.VISIBLE);
+        viewPagerDetails.setVisibility(View.GONE);
+        float scale = mStartValues.getFloat(KEY_SCALE) / mEndValues.getFloat(KEY_SCALE);
+        ObjectAnimator scaleX = ObjectAnimator.ofFloat(imgPlaceholder, "scaleX", 1, scale);
+        ObjectAnimator scaleY = ObjectAnimator.ofFloat(imgPlaceholder, "scaleY", 1, scale);
+//        ValueAnimator widthAnimator = ValueAnimator.ofObject(new WidthEvaluator(imgPlaceholder), startWidth, endWidth);
+//        ValueAnimator heightAnimator = ValueAnimator.ofObject(new HeightEvaluator(imgPlaceholder), (int)(startHeight/scale), endHeight);
+        ObjectAnimator translationX = ObjectAnimator.ofFloat(imgPlaceholder, "translationX", 0, (startPosX - endPosX) / scale);
+        ObjectAnimator translationY = ObjectAnimator.ofFloat(imgPlaceholder, "translationY", 0, (startPosY - endPosY) / scale);
+        AnimatorSet animatorSet = new AnimatorSet();
+        animatorSet.setDuration(500);
+        animatorSet.playTogether(scaleX, scaleY/* , widthAnimator,  heightAnimator*/,translationX, translationY);
+        animatorSet.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                imgPlaceholder.setVisibility(View.VISIBLE);
+                viewPagerDetails.setVisibility(View.GONE);
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                runnable.run();
+            }
+        });
+        animatorSet.start();
+    }
+
+    @Override
+    public void dismiss() {
+        runExitAnimation(new Runnable() {
+            @Override
+            public void run() {
+                FullScreenDialogFragment.super.dismiss();
+            }
+        });
     }
 
     List<Integer> mCovers;
